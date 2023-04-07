@@ -3,6 +3,7 @@
 out/
 benchmarks.test
 *.out
+*.prof
 
 # Jetbrains Goland
 .idea/

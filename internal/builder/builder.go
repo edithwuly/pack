@@ -314,6 +314,7 @@ func (b *Builder) SetStack(stackConfig builder.StackConfig) {
 func (b *Builder) Save(logger logging.Logger, creatorMetadata CreatorMetadata) error {
 	logger.Debugf("Creating builder with the following buildpacks:")
 	logger.Infof("output buildpack start")
+	logger.Infof("the number of buildpacks: %d", len(b.metadata.Buildpacks))
 	for _, bpInfo := range b.metadata.Buildpacks {
 		logger.Debugf("-> %s", style.Symbol(bpInfo.FullName()))
 	}

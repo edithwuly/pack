@@ -84,8 +84,8 @@ def run(command, out, error="error.out"):
             endTime = datetime.datetime.strptime(output[output.rfind('\n', 0, end):end].strip(), format)
             time += endTime - startTime
 
-            # remove time spent on pulling image from validating run image
-            if label == labels["validateRunImage"]:
+            # remove time spent on pulling image from validating run image and process buildpack
+            if label == labels["validateRunImage"] or label == labels["processBuildpack"]:
                 start = output.find(labels["pullImage"] + " start", start, end)
                 if start != -1:
                     startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
@@ -106,9 +106,18 @@ def run(command, out, error="error.out"):
 
         return time
 
+    def getBuildpackNumber():
+        numBuildpack = "0"
+        start = output.find("the number of buildpacks: ")
+        if start != -1:
+            numBuildpack = output[output.find(":", start) + 2:output.find("\n", start)]
+        return numBuildpack
+
     result = {}
     for key in labels.keys():
         result[key] = calculateTime(labels[key])
+
+    result["BuildpackNum"] = getBuildpackNumber()
 
     return result
 
@@ -162,6 +171,13 @@ def tinyBuild(imageName):
     return repeat(command, "tiny_build.out")
 
 
+def buildpackBuild(imageName):
+    buildpack = "docker://cnbs/sample-package:hello-universe"
+    builder = "paketobuildpacks/builder:tiny"
+    command = PACK + " build " + imageName + " --builder " + builder + " --buildpack " + buildpack + " --timestamps -v"
+    return repeat(command, "buildpack_build.out")
+
+
 def cacheImageBuild(imageName):
     builder = "paketobuildpacks/builder:base"
     command = PACK + " build " + imageName + " --builder " + builder + \
@@ -195,7 +211,7 @@ def untrustedBuild(imageName):
     return repeat(command, "untrusted_build.out")
 
 
-def main():
+def profilingTime():
     file = open("profiling.csv", "w")
     file.write("condition")
     for key in labels.keys():
@@ -219,6 +235,9 @@ def main():
     result = tinyBuild(imageName)
     output("tiny build", result)
 
+    result = buildpackBuild(imageName)
+    output("buildpack build", result)
+
     result = cacheImageBuild(imageName)
     output("cache image build", result)
 
@@ -235,6 +254,64 @@ def main():
     output("untrusted build", result)
 
     file.close()
+
+    return
+
+
+def differentBuilder():
+    imageName = "paketo-demo-app"
+    paketoBuilder = "paketobuildpacks/builder"
+    paketoTags = ["tiny", "base", "full"]
+    cnfBuilder = "cnbs/sample-builder"
+    cnfTags = ["wine", "jammy", "alpine", "bionic"]
+
+    outputTime = {}
+    buildpackNum = {}
+
+    def calculateTimeAndNum(tags, builder):
+        for tag in tags:
+            command = PACK + " build " + imageName + " --builder " + builder + ":" + tag + " --timestamps -v"
+            outputBuildpackTime = datetime.timedelta(0)
+            for i in range(N):
+                result = run(command, "differentbuilder.out")
+                if i < k:
+                    buildpackNum[tag] = result["BuildpackNum"]
+                else:
+                    outputBuildpackTime += result["outputBuildpack"]
+
+            outputBuildpackTime /= N - k
+            outputTime[tag] = outputBuildpackTime
+
+    calculateTimeAndNum(paketoTags, paketoBuilder)
+    calculateTimeAndNum(cnfTags, cnfBuilder)
+
+    process = subprocess.Popen("docker image ls", shell=True, stdout=open("dockerImage.out", "w"), stderr=open("error.out", "w"))
+    process.wait()
+    output = open("dockerImage.out").read()
+    error = open("error.out").read()
+
+    if error != "":
+        print(error)
+
+    for tag in paketoTags:
+        start = output.find("paketobuildpacks/builder   " + tag)
+        end = output.find("\n", start)
+        size = output[output.rfind(" ", start, end) + 1: end]
+        print(paketoBuilder + ":" + tag + ", " + size + ", " + buildpackNum[tag] + ", " + str(outputTime[tag]))
+
+    for tag in cnfTags:
+        start = output.find("cnbs/sample-builder        " + tag)
+        end = output.find("\n", start)
+        size = output[output.rfind(" ", start, end) + 1: end]
+        print(cnfBuilder + ":" + tag + ", " + size + ", " + buildpackNum[tag] + ", " + str(outputTime[tag]))
+
+    return
+
+def main():
+
+    profilingTime()
+
+    # differentBuilder()
 
 
 if __name__ == "__main__":
