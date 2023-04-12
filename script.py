@@ -140,13 +140,13 @@ def repeat(command, out):
 
 
 def firstBuild(imageName):
-    builder = "paketobuildpacks/builder:base"
+    builder = "cnbs/sample-builder:jammy"
     repeatResult = {}
     for key in labels.keys():
         repeatResult[key] = datetime.timedelta(0)
     for i in range(N):
         command = PACK + " build " + imageName + "-" + datetime.datetime.now().strftime("%S.%f") + \
-                  " --builder " + builder + " --timestamps -v"
+                  " --builder " + builder + " --path apps/bash-script/ --timestamps -v"
         result = run(command, "first_build.out")
         if i < k:
             continue
@@ -160,8 +160,8 @@ def firstBuild(imageName):
 
 
 def laterBuild(imageName):
-    builder = "paketobuildpacks/builder:base"
-    command = PACK + " build " + imageName + " --builder " + builder + " --timestamps -v"
+    builder = "cnbs/sample-builder:jammy"
+    command = PACK + " build " + imageName + " --builder " + builder + " --path apps/bash-script/ --timestamps -v"
     return repeat(command, "later_build.out")
 
 
@@ -232,26 +232,26 @@ def profilingTime():
     result = laterBuild(imageName)
     output("later build", result)
 
-    result = tinyBuild(imageName)
-    output("tiny build", result)
-
-    result = buildpackBuild(imageName)
-    output("buildpack build", result)
-
-    result = cacheImageBuild(imageName)
-    output("cache image build", result)
-
-    result = neverBuild(imageName)
-    output("never policy build", result)
-
-    result = alwaysBuild(imageName)
-    output("always policy build", result)
-
-    result = publishBuild(imageName)
-    output("publish build", result)
-
-    result = untrustedBuild(imageName)
-    output("untrusted build", result)
+    # result = tinyBuild(imageName)
+    # output("tiny build", result)
+    #
+    # result = buildpackBuild(imageName)
+    # output("buildpack build", result)
+    #
+    # result = cacheImageBuild(imageName)
+    # output("cache image build", result)
+    #
+    # result = neverBuild(imageName)
+    # output("never policy build", result)
+    #
+    # result = alwaysBuild(imageName)
+    # output("always policy build", result)
+    #
+    # result = publishBuild(imageName)
+    # output("publish build", result)
+    #
+    # result = untrustedBuild(imageName)
+    # output("untrusted build", result)
 
     file.close()
 
