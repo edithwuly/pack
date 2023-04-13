@@ -13,7 +13,7 @@ k = 2
 labels = {"build": "build",
           "lifecycle": "lifecycleExecutor",
           "pullImage": "NetWork I/O for pulling image",
-          "download": "NetWork I/O for downloading",
+          "download": "Network I/O for downloading",
           "saveBuilder": "I/O for saving builder",
           "parseImageReference": "parse image reference",
           "processAppPath": "process app path",
@@ -91,8 +91,7 @@ def run(command, out, error="error.out"):
             time += endTime - startTime
 
             # remove time spent on pulling image from validating run image and process buildpack
-            if label == labels["validateRunImage"] or label == labels["processBuildpack"] or \
-                    label == labels["fetchBuildpack"] or label == labels["fetchPreBuildpack"] or label == labels["fetchPostBuildpack"]:
+            if label == labels["validateRunImage"]:
                 start = output.find(labels["pullImage"] + " start", start, end)
                 if start != -1:
                     startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
@@ -107,6 +106,12 @@ def run(command, out, error="error.out"):
                 if start != -1:
                     startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
                     end = output.find(labels["download"] + " end", start)
+                    endTime = datetime.datetime.strptime(output[output.rfind('\n', 0, end):end].strip(), format)
+                    time -= endTime - startTime
+                start = output.find(labels["pullImage"] + " start", start, end)
+                if start != -1:
+                    startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
+                    end = output.find(labels["pullImage"] + " end", start)
                     endTime = datetime.datetime.strptime(output[output.rfind('\n', 0, end):end].strip(), format)
                     time -= endTime - startTime
 
@@ -157,13 +162,13 @@ def repeat(command, out):
 
 
 def firstBuild(imageName):
-    builder = "cnbs/sample-builder:jammy"
+    builder = "paketobuildpacks/builder:base"
     repeatResult = {}
     for key in labels.keys():
         repeatResult[key] = datetime.timedelta(0)
     for i in range(N):
         command = PACK + " build " + imageName + "-" + datetime.datetime.now().strftime("%S.%f") + \
-                  " --builder " + builder + " --path apps/bash-script/ --timestamps -v"
+                  " --builder " + builder + " --timestamps -v"
         result = run(command, "first_build.out")
         if i < k:
             continue
@@ -177,8 +182,8 @@ def firstBuild(imageName):
 
 
 def laterBuild(imageName):
-    builder = "cnbs/sample-builder:jammy"
-    command = PACK + " build " + imageName + " --builder " + builder + " --path apps/bash-script/ --timestamps -v"
+    builder = "paketobuildpacks/builder:base"
+    command = PACK + " build " + imageName + " --builder " + builder + " --timestamps -v"
     return repeat(command, "later_build.out")
 
 
@@ -190,7 +195,7 @@ def tinyBuild(imageName):
 
 def buildpackBuild(imageName):
     buildpack = "docker://cnbs/sample-package:hello-universe"
-    builder = "paketobuildpacks/builder:tiny"
+    builder = "paketobuildpacks/builder:base"
     command = PACK + " build " + imageName + " --builder " + builder + " --buildpack " + buildpack + " --timestamps -v"
     return repeat(command, "buildpack_build.out")
 
@@ -228,6 +233,12 @@ def untrustedBuild(imageName):
     return repeat(command, "untrusted_build.out")
 
 
+def descriptorBuild(imageName):
+    builder = "cnbs/sample-builder:jammy"
+    command = PACK + " build " + imageName + " --builder " + builder + " --path apps/bash-script/ --timestamps -v"
+    return repeat(command, "descriptor_build.out")
+
+
 def profilingTime():
     file = open("profiling.csv", "w")
     file.write("condition")
@@ -249,26 +260,29 @@ def profilingTime():
     result = laterBuild(imageName)
     output("later build", result)
 
-    # result = tinyBuild(imageName)
-    # output("tiny build", result)
-    #
-    # result = buildpackBuild(imageName)
-    # output("buildpack build", result)
-    #
-    # result = cacheImageBuild(imageName)
-    # output("cache image build", result)
-    #
-    # result = neverBuild(imageName)
-    # output("never policy build", result)
-    #
-    # result = alwaysBuild(imageName)
-    # output("always policy build", result)
-    #
-    # result = publishBuild(imageName)
-    # output("publish build", result)
-    #
-    # result = untrustedBuild(imageName)
-    # output("untrusted build", result)
+    result = tinyBuild(imageName)
+    output("tiny build", result)
+
+    result = buildpackBuild(imageName)
+    output("buildpack build", result)
+
+    result = descriptorBuild(imageName)
+    output("descriptor build", result)
+
+    result = cacheImageBuild(imageName)
+    output("cache image build", result)
+
+    result = neverBuild(imageName)
+    output("never policy build", result)
+
+    result = alwaysBuild(imageName)
+    output("always policy build", result)
+
+    result = publishBuild(imageName)
+    output("publish build", result)
+
+    result = untrustedBuild(imageName)
+    output("untrusted build", result)
 
     file.close()
 
