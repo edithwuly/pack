@@ -60,7 +60,13 @@ labels = {"build": "build",
           "getOrderLayer": "get order layer",
           "addOrderLayer": "add order layer",
           "setBuildpackOrderLayer": "set buildpack order layer",
-          "setExtensionOrderLayer": "set extension order layer"
+          "setExtensionOrderLayer": "set extension order layer",
+          "getProjectDescriptorBuildpack": "get project descriptor buildpack",
+          "fetchBuildpack": "fetch buildpack",
+          "getPreBuildpackLocator": "get preBuildpack locator",
+          "getpostBuildpackLocator": "get postBuildpack locator",
+          "fetchPreBuildpack": "fetch preBuildpack",
+          "fetchPostBuildpack": "fetch postBuildpack"
           }
 
 def run(command, out, error="error.out"):
@@ -85,11 +91,22 @@ def run(command, out, error="error.out"):
             time += endTime - startTime
 
             # remove time spent on pulling image from validating run image and process buildpack
-            if label == labels["validateRunImage"] or label == labels["processBuildpack"]:
+            if label == labels["validateRunImage"] or label == labels["processBuildpack"] or \
+                    label == labels["fetchBuildpack"] or label == labels["fetchPreBuildpack"] or label == labels["fetchPostBuildpack"]:
                 start = output.find(labels["pullImage"] + " start", start, end)
                 if start != -1:
                     startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
                     end = output.find(labels["pullImage"] + " end", start)
+                    endTime = datetime.datetime.strptime(output[output.rfind('\n', 0, end):end].strip(), format)
+                    time -= endTime - startTime
+
+            # remove time spent on downloading from process buildpack
+            if label == labels["processBuildpack"] or label == labels["fetchBuildpack"] or \
+                    label == labels["fetchPreBuildpack"] or label == labels["fetchPostBuildpack"]:
+                start = output.find(labels["download"] + " start", start, end)
+                if start != -1:
+                    startTime = datetime.datetime.strptime(output[output.rfind('\n', 0, start):start].strip(), format)
+                    end = output.find(labels["download"] + " end", start)
                     endTime = datetime.datetime.strptime(output[output.rfind('\n', 0, end):end].strip(), format)
                     time -= endTime - startTime
 

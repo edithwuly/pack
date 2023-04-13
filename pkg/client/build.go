@@ -916,6 +916,7 @@ func (c *Client) processBuildpacks(ctx context.Context, builderImage imgutil.Ima
 	relativeBaseDir := opts.RelativeBaseDir
 	declaredBPs := opts.Buildpacks
 
+	c.logger.Infof("get project descriptor buildpack start")
 	// declare buildpacks provided by project descriptor when no buildpacks are declared
 	if len(declaredBPs) == 0 && len(opts.ProjectDescriptor.Build.Buildpacks) != 0 {
 		relativeBaseDir = opts.ProjectDescriptorBaseDir
@@ -923,16 +924,20 @@ func (c *Client) processBuildpacks(ctx context.Context, builderImage imgutil.Ima
 		for _, bp := range opts.ProjectDescriptor.Build.Buildpacks {
 			buildpackLocator, err := getBuildpackLocator(bp, stackID)
 			if err != nil {
+				c.logger.Infof("get project descriptor buildpack end")
 				return nil, nil, err
 			}
 			declaredBPs = append(declaredBPs, buildpackLocator)
 		}
 	}
+	c.logger.Infof("get project descriptor buildpack end")
 
 	order = dist.Order{{Group: []dist.ModuleRef{}}}
+	c.logger.Infof("fetch buildpack start")
 	for _, bp := range declaredBPs {
 		locatorType, err := buildpack.GetLocatorType(bp, relativeBaseDir, builderBPs)
 		if err != nil {
+			c.logger.Infof("fetch buildpack end")
 			return nil, nil, err
 		}
 
@@ -943,6 +948,7 @@ func (c *Client) processBuildpacks(ctx context.Context, builderImage imgutil.Ima
 				order = builderOrder
 			case len(order) > 1:
 				// This should only ever be possible if they are using from=builder twice which we don't allow
+				c.logger.Infof("fetch buildpack end")
 				return nil, nil, errors.New("buildpacks from builder can only be defined once")
 			default:
 				newOrder := dist.Order{}
@@ -957,54 +963,68 @@ func (c *Client) processBuildpacks(ctx context.Context, builderImage imgutil.Ima
 		default:
 			newFetchedBPs, moduleInfo, err := c.fetchBuildpack(ctx, bp, relativeBaseDir, builderImage, builderBPs, opts)
 			if err != nil {
+				c.logger.Infof("fetch buildpack end")
 				return fetchedBPs, order, err
 			}
 			fetchedBPs = append(fetchedBPs, newFetchedBPs...)
 			order = appendBuildpackToOrder(order, *moduleInfo)
 		}
 	}
+	c.logger.Infof("fetch buildpack end")
 
 	if (len(order) == 0 || len(order[0].Group) == 0) && len(builderOrder) > 0 {
 		preBuildpacks := opts.PreBuildpacks
 		postBuildpacks := opts.PostBuildpacks
+		c.logger.Infof("get preBuildpack locator start")
 		if len(preBuildpacks) == 0 && len(opts.ProjectDescriptor.Build.Pre.Buildpacks) > 0 {
 			for _, bp := range opts.ProjectDescriptor.Build.Pre.Buildpacks {
 				buildpackLocator, err := getBuildpackLocator(bp, stackID)
 				if err != nil {
+					c.logger.Infof("get preBuildpack locator end")
 					return nil, nil, errors.Wrap(err, "get pre-buildpack locator")
 				}
 				preBuildpacks = append(preBuildpacks, buildpackLocator)
 			}
 		}
+		c.logger.Infof("get preBuildpack locator end")
+		c.logger.Infof("get postBuildpack locator start")
 		if len(postBuildpacks) == 0 && len(opts.ProjectDescriptor.Build.Post.Buildpacks) > 0 {
 			for _, bp := range opts.ProjectDescriptor.Build.Post.Buildpacks {
 				buildpackLocator, err := getBuildpackLocator(bp, stackID)
 				if err != nil {
+					c.logger.Infof("get postBuildpack locator end")
 					return nil, nil, errors.Wrap(err, "get post-buildpack locator")
 				}
 				postBuildpacks = append(postBuildpacks, buildpackLocator)
 			}
 		}
+		c.logger.Infof("get postBuildpack locator end")
 
 		if len(preBuildpacks) > 0 || len(postBuildpacks) > 0 {
 			order = builderOrder
+			c.logger.Infof("fetch preBuildpack start")
 			for _, bp := range preBuildpacks {
 				newFetchedBPs, moduleInfo, err := c.fetchBuildpack(ctx, bp, relativeBaseDir, builderImage, builderBPs, opts)
 				if err != nil {
+					c.logger.Infof("fetch preBuildpack end")
 					return fetchedBPs, order, err
 				}
 				fetchedBPs = append(fetchedBPs, newFetchedBPs...)
 				order = prependBuildpackToOrder(order, *moduleInfo)
 			}
+			c.logger.Infof("fetch preBuildpack end")
 
+			c.logger.Infof("fetch postBuildpack start")
 			for _, bp := range postBuildpacks {
 				newFetchedBPs, moduleInfo, err := c.fetchBuildpack(ctx, bp, relativeBaseDir, builderImage, builderBPs, opts)
 				if err != nil {
+					c.logger.Infof("fetch postBuildpack end")
 					return fetchedBPs, order, err
 				}
 				fetchedBPs = append(fetchedBPs, newFetchedBPs...)
 				order = appendBuildpackToOrder(order, *moduleInfo)
 			}
+			c.logger.Infof("fetch postBuildpack end")
 		}
 	}
 
