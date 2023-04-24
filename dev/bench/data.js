@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1682247215667,
+  "lastUpdate": 1682317682710,
   "repoUrl": "https://github.com/edithwuly/pack",
   "entries": {
     "Go Benchmark": [
@@ -238,6 +238,48 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkBuild/with_Addtional_Buildpack",
             "value": 28391266735,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "33151775+edithwuly@users.noreply.github.com",
+            "name": "edithwuly",
+            "username": "edithwuly"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "66d2d9ee8f1a9ad0f8851586ca73a72d7519b041",
+          "message": "Update benchmark.yml\n\nSigned-off-by: edithwuly <33151775+edithwuly@users.noreply.github.com>",
+          "timestamp": "2023-04-24T14:26:34+08:00",
+          "tree_id": "cc5a5ed2e283b4674070eaf758b9e78833f9b3c0",
+          "url": "https://github.com/edithwuly/pack/commit/66d2d9ee8f1a9ad0f8851586ca73a72d7519b041"
+        },
+        "date": 1682317682172,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkBuild/with_Untrusted_Builder",
+            "value": 4315528954,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Trusted_Builder",
+            "value": 1140445695,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Addtional_Buildpack",
+            "value": 26877956083,
             "unit": "ns/op",
             "extra": "1 times\n2 procs"
           }
