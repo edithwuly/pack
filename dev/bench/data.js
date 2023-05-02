@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1682613770594,
+  "lastUpdate": 1682998856534,
   "repoUrl": "https://github.com/edithwuly/pack",
   "entries": {
     "Go Benchmark": [
@@ -448,6 +448,48 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkBuild/with_Addtional_Buildpack",
             "value": 26573054661,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jpkutner@gmail.com",
+            "name": "Joe Kutner",
+            "username": "jkutner"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "12bc0e241895c9fec3940164ea9771f7ea4f5e53",
+          "message": "Merge pull request #1736 from edithwuly/main\n\nCreate benchmark.yml and add end-to-end benchmark",
+          "timestamp": "2023-04-27T12:06:16-05:00",
+          "tree_id": "8b575f8e07240067b11071182b701645dde1dbd2",
+          "url": "https://github.com/edithwuly/pack/commit/12bc0e241895c9fec3940164ea9771f7ea4f5e53"
+        },
+        "date": 1682998855519,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkBuild/with_Untrusted_Builder",
+            "value": 8213738819,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Trusted_Builder",
+            "value": 2473981532,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Addtional_Buildpack",
+            "value": 34694092466,
             "unit": "ns/op",
             "extra": "1 times\n2 procs"
           }
