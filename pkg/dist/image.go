@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/buildpacks/pack/pkg/logging"
 	"github.com/buildpacks/imgutil"
-	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -31,7 +30,6 @@ func SetLabel(labelable Labelable, label string, data interface{}) error {
 }
 
 func GetLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
-	fmt.Printf("get label\n")
 	labelData, err := labeled.Label(label)
 	if err != nil {
 		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
