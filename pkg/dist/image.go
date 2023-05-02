@@ -2,6 +2,9 @@ package dist
 
 import (
 	"encoding/json"
+	"github.com/buildpacks/pack/pkg/logging"
+	"github.com/buildpacks/imgutil"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -28,12 +31,60 @@ func SetLabel(labelable Labelable, label string, data interface{}) error {
 }
 
 func GetLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
+	fmt.Printf("get label\n")
 	labelData, err := labeled.Label(label)
 	if err != nil {
 		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
 	}
 	if labelData != "" {
 		if err := json.Unmarshal([]byte(labelData), obj); err != nil {
+			return false, errors.Wrapf(err, "unmarshalling label %s", style.Symbol(label))
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func GetPointerLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
+	labelData, err := labeled.Label(label)
+	if err != nil {
+		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
+	}
+	if labelData != "" {
+		if err := json.Unmarshal([]byte(labelData), &obj); err != nil {
+			return false, errors.Wrapf(err, "unmarshalling label %s", style.Symbol(label))
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func GetPointerBuildpacksLabel(logger logging.Logger, labeled *imgutil.Image, label string, obj interface{}) (ok bool, err error) {
+	logger.Infof("addr of image: %p", labeled)
+	logger.Infof("get buildpacks label IO start")
+	labelData, err := (*labeled).Label(label)
+	logger.Infof("get buildpacks label IO end")
+	if err != nil {
+		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
+	}
+	if labelData != "" {
+		if err := json.Unmarshal([]byte(labelData), obj); err != nil {
+			return false, errors.Wrapf(err, "unmarshalling label %s", style.Symbol(label))
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func GetBuildpacksLabel(logger logging.Logger, labeled Labeled, label string, obj interface{}) (ok bool, err error) {
+	logger.Infof("get buildpacks label IO start")
+	labelData, err := labeled.Label(label)
+	logger.Infof("get buildpacks label IO end")
+	if err != nil {
+		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
+	}
+	if labelData != "" {
+		if err := json.Unmarshal([]byte(labelData), &obj); err != nil {
 			return false, errors.Wrapf(err, "unmarshalling label %s", style.Symbol(label))
 		}
 		return true, nil
