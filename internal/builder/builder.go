@@ -374,12 +374,9 @@ func (b *Builder) Save(logger logging.Logger, creatorMetadata CreatorMetadata) e
 	}
 	logger.Infof("validate extensions end")
 
-	logger.Infof("test get label")
-	dist.GetBuildpacksLabel(logger, b.image, dist.BuildpackLayersLabel, dist.ModuleLayers{})
-
 	logger.Infof("get buildpack label start")
 	bpLayers := dist.ModuleLayers{}
-	if _, err := dist.GetBuildpacksLabel(logger, b.image, dist.BuildpackLayersLabel, &bpLayers); err != nil {
+	if _, err := dist.GetLabel(b.image, dist.BuildpackLayersLabel, &bpLayers); err != nil {
 		logger.Infof("get buildpack label end")
 		return errors.Wrapf(err, "getting label %s", dist.BuildpackLayersLabel)
 	}
