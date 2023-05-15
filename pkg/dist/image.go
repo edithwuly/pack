@@ -40,7 +40,7 @@ func id_from(labeled Labeled, label string) (string, error) {
 
 var cache map[string]interface{}
 
-func getLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
+func GetLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
 	labelData, err := labeled.Label(label)
 	if err != nil {
 		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))
@@ -54,7 +54,7 @@ func getLabel(labeled Labeled, label string, obj interface{}) (ok bool, err erro
 	return false, nil
 }
 
-func GetLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
+func getLabel(labeled Labeled, label string, obj interface{}) (ok bool, err error) {
 	labelData, err := labeled.Label(label)
 	if err != nil {
 		return false, errors.Wrapf(err, "retrieving label %s", style.Symbol(label))

@@ -2,11 +2,10 @@ package buildpack
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"os"
 	"path"
-	"path/filepath"
+	// "path/filepath"
 
 	"github.com/BurntSushi/toml"
 	"github.com/buildpacks/lifecycle/api"
@@ -279,23 +278,32 @@ func validateExtensionDescriptor(extd dist.ExtensionDescriptor) error {
 }
 
 func ToLayerTar(dest string, module BuildModule) (string, error) {
-	descriptor := module.Descriptor()
+	// descriptor := module.Descriptor()
 	modReader, err := module.Open()
 	if err != nil {
 		return "", errors.Wrap(err, "opening blob")
 	}
 	defer modReader.Close()
 
-	layerTar := filepath.Join(dest, fmt.Sprintf("%s.%s.tar", descriptor.EscapedID(), descriptor.Info().Version))
-	fh, err := os.Create(layerTar)
-	if err != nil {
-		return "", errors.Wrap(err, "create file for tar")
-	}
-	defer fh.Close()
+	// layerTar := filepath.Join(dest, fmt.Sprintf("%s.%s.tar", descriptor.EscapedID(), descriptor.Info().Version))
+	// fh, err := os.Create(layerTar)
+	// if err != nil {
+	// 	return "", errors.Wrap(err, "create file for tar")
+	// }
+	// defer fh.Close()
 
-	if _, err := io.Copy(fh, modReader); err != nil {
-		return "", errors.Wrap(err, "writing blob to tar")
-	}
+	// if _, err := io.Copy(fh, modReader); err != nil {
+	// 	return "", errors.Wrap(err, "writing blob to tar")
+	// }
 
-	return layerTar, nil
+    f := modReader.(*os.File)
+
+	// err = os.Rename(f.Name(), layerTar)
+    // if err != nil {
+    //     return "", errors.Wrap(err, "rename tar")
+    // }
+	// module.Rename(layerTar)
+
+	// return LayerTar, nil
+	return f.Name(), nil
 }

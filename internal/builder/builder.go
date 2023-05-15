@@ -542,12 +542,15 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 				lids[i] <- modInfo{err: errors.Wrapf(err, "creating %s temp dir", kind)}
 			}
 
+			logger.Infof("save module blob to tar: %s start\n", module.Descriptor().Info().FullName())
 			// create tar file
 			layerTar, err := buildpack.ToLayerTar(modTmpDir, module)
 			if err != nil {
 				lids[i] <- modInfo{err: err}
 			}
+			logger.Infof("save module blob to tar: %s end\n", module.Descriptor().Info().FullName())
 
+			logger.Infof("create diff id: %s start\n", module.Descriptor().Info().FullName())
 			// generate diff id
 			diffID, err := dist.LayerDiffID(layerTar)
 			info := module.Descriptor().Info()
@@ -558,6 +561,8 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 					style.Symbol(info.FullName()),
 				)}
 			}
+			logger.Infof("create diff id: %s end\n", module.Descriptor().Info().FullName())
+			
 			lids[i] <- modInfo{
 				info:     info,
 				layerTar: layerTar,
@@ -566,6 +571,7 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 		}(i, module)
 	}
 
+	logger.Infof("add additional modules start")
 	for i, module := range additionalModules {
 		mi := <-lids[i]
 		if mi.err != nil {
@@ -579,6 +585,7 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 				logger.Debugf("%s %s already exists on builder with same contents, skipping...", istrings.Title(kind), style.Symbol(info.FullName()))
 				continue
 			} else {
+				logger.Infof("create whiteout tar for %s start\n", style.Symbol(info.FullName()))
 				whiteoutsTar, err := b.whiteoutLayer(tmpDir, i, info)
 				if err != nil {
 					return err
@@ -587,6 +594,7 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 				if err := image.AddLayer(whiteoutsTar); err != nil {
 					return errors.Wrap(err, "adding whiteout layer tar")
 				}
+				logger.Infof("create whiteout tar for %s end\n", style.Symbol(info.FullName()))
 			}
 
 			logger.Debugf(ModuleOnBuilderMessage, kind, style.Symbol(info.FullName()), style.Symbol(existingInfo.LayerDiffID), style.Symbol(diffID.String()))
@@ -608,7 +616,9 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 			diffID:  diffID.String(),
 			module:  module,
 		}
+		fmt.Printf("tarPath: %s\n", layerTar)
 	}
+	logger.Infof("add additional modules end")
 
 	// Fixes 1453
 	keys := sortKeys(collectionToAdd)
