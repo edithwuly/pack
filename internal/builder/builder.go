@@ -536,21 +536,23 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 
 	for i, module := range additionalModules {
 		go func(i int, module buildpack.BuildModule) {
+			now := time.Now()
 			// create directory
-			modTmpDir := filepath.Join(tmpDir, fmt.Sprintf("%s-%s", kind, strconv.Itoa(i)))
-			if err := os.MkdirAll(modTmpDir, os.ModePerm); err != nil {
-				lids[i] <- modInfo{err: errors.Wrapf(err, "creating %s temp dir", kind)}
-			}
+			// modTmpDir := filepath.Join(tmpDir, fmt.Sprintf("%s-%s", kind, strconv.Itoa(i)))
+			// if err := os.MkdirAll(modTmpDir, os.ModePerm); err != nil {
+			// 	lids[i] <- modInfo{err: errors.Wrapf(err, "creating %s temp dir", kind)}
+			// }
+			modTmpDir := ""
 
-			logger.Infof("save module blob to tar: %s start\n", module.Descriptor().Info().FullName())
+			// logger.Infof("save module blob to tar: %s start\n", module.Descriptor().Info().FullName())
 			// create tar file
 			layerTar, err := buildpack.ToLayerTar(modTmpDir, module)
 			if err != nil {
 				lids[i] <- modInfo{err: err}
 			}
-			logger.Infof("save module blob to tar: %s end\n", module.Descriptor().Info().FullName())
+			// logger.Infof("save module blob to tar: %s end\n", module.Descriptor().Info().FullName())
 
-			logger.Infof("create diff id: %s start\n", module.Descriptor().Info().FullName())
+			// logger.Infof("create diff id: %s start\n", module.Descriptor().Info().FullName())
 			// generate diff id
 			diffID, err := dist.LayerDiffID(layerTar)
 			info := module.Descriptor().Info()
@@ -561,8 +563,9 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 					style.Symbol(info.FullName()),
 				)}
 			}
-			logger.Infof("create diff id: %s end\n", module.Descriptor().Info().FullName())
-			
+			// logger.Infof("create diff id: %s end\n", module.Descriptor().Info().FullName())
+			fmt.Printf("time spent on each buildpack: %s\n", time.Since(now))
+
 			lids[i] <- modInfo{
 				info:     info,
 				layerTar: layerTar,
@@ -571,7 +574,7 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 		}(i, module)
 	}
 
-	logger.Infof("add additional modules start")
+	// logger.Infof("add additional modules start")
 	for i, module := range additionalModules {
 		mi := <-lids[i]
 		if mi.err != nil {
@@ -616,9 +619,9 @@ func (b *Builder) addModules(kind string, logger logging.Logger, tmpDir string, 
 			diffID:  diffID.String(),
 			module:  module,
 		}
-		fmt.Printf("tarPath: %s\n", layerTar)
+		// fmt.Printf("tarPath: %s\n", layerTar)
 	}
-	logger.Infof("add additional modules end")
+	// logger.Infof("add additional modules end")
 
 	// Fixes 1453
 	keys := sortKeys(collectionToAdd)

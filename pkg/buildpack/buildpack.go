@@ -2,6 +2,7 @@ package buildpack
 
 import (
 	"archive/tar"
+	// "fmt"
 	"io"
 	"os"
 	"path"
@@ -296,14 +297,10 @@ func ToLayerTar(dest string, module BuildModule) (string, error) {
 	// 	return "", errors.Wrap(err, "writing blob to tar")
 	// }
 
+	// fmt.Printf("layerTar: %s\n", layerTar)
+	// return layerTar, nil
+
     f := modReader.(*os.File)
-
-	// err = os.Rename(f.Name(), layerTar)
-    // if err != nil {
-    //     return "", errors.Wrap(err, "rename tar")
-    // }
-	// module.Rename(layerTar)
-
-	// return LayerTar, nil
+	// fmt.Printf("f.Name(): %s\n", f.Name())
 	return f.Name(), nil
 }
