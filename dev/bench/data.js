@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1684736374338,
+  "lastUpdate": 1685044707239,
   "repoUrl": "https://github.com/edithwuly/pack",
   "entries": {
     "Go Benchmark": [
@@ -616,6 +616,48 @@ window.BENCHMARK_DATA = {
           {
             "name": "BenchmarkBuild/with_Additional_Buildpack",
             "value": 86043680862,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jpkutner@gmail.com",
+            "name": "Joe Kutner",
+            "username": "jkutner"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "24e4968fa2e879956ad0b014816ac382d0ae808c",
+          "message": "Merge branch 'main' into main",
+          "timestamp": "2023-05-25T14:55:27-05:00",
+          "tree_id": "6505dd72e40c0b97573499c681b1ffee59ecaf9c",
+          "url": "https://github.com/edithwuly/pack/commit/24e4968fa2e879956ad0b014816ac382d0ae808c"
+        },
+        "date": 1685044706702,
+        "tool": "go",
+        "benches": [
+          {
+            "name": "BenchmarkBuild/with_Untrusted_Builder",
+            "value": 4419165665,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Trusted_Builder",
+            "value": 1210583010,
+            "unit": "ns/op",
+            "extra": "1 times\n2 procs"
+          },
+          {
+            "name": "BenchmarkBuild/with_Additional_Buildpack",
+            "value": 77157985028,
             "unit": "ns/op",
             "extra": "1 times\n2 procs"
           }
